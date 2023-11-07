@@ -101,3 +101,14 @@ for line in diff:
         print(f'Added: {line[2:]}')  # Line only in the running config
 
 print('------------------------------------------------------')
+
+
+error message 
+Traceback (most recent call last):
+  File "/home/devasc/Downloads/f.py", line 24, in <module>
+    tn.read_until(b'Password: ')
+  File "/usr/lib/python3.8/telnetlib.py", line 315, in read_until
+    if selector.select(timeout):
+  File "/usr/lib/python3.8/selectors.py", line 415, in select
+    fd_event_list = self._selector.poll(timeout)
+KeyboardInterrupt
