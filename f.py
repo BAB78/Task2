@@ -107,3 +107,10 @@ for line in diff:
         print(f'Added: {line[2:]}')  # Line only in the running config
 
 print('------------------------------------------------------')
+
+
+error message 
+raceback (most recent call last):
+  File "/home/devasc/labs/prne/f.py", line 94, in <module>
+    with open(offline_config_file, 'r') as offline_file:
+FileNotFoundError: [Errno 2] No such file or directory: 'offline_config.txt'
