@@ -23,6 +23,9 @@ def telnet_session(ip, user, passwd, enable_pass, command):
         tn.read_until(b'Password: ', timeout=10)
         tn.write(enable_pass.encode('utf-8') + b'\n')
 
+        # Add the "terminal length 0" command to disable paging
+        tn.write(b'terminal length 0\n')
+
         # Send a command to output the running configuration
         tn.write(command.encode('utf-8') + b'\n')
         
@@ -71,6 +74,7 @@ try:
     print(f'Enable Password: {enable_password}')
 
     # Send a command to output the running configuration
+    ssh_shell.send('terminal length 0\n')  # Disable paging for SSH as well
     ssh_shell.send('show running-config\n')
     running_config_ssh = ssh_shell.recv(65535).decode('utf-8')
 
