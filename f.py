@@ -11,6 +11,7 @@ enable_password = 'class123!'
 ssh_username = 'cisco'
 ssh_password = 'cisco123!'
 output_file = 'running_config.txt'  # Name of the local file to save the configuration
+offline_config_file = 'devasc/labs/prne/offline_config.txt'  # Specify the path for the offline configuration file
 
 # Function to handle Telnet login and command execution
 def telnet_session(ip, user, passwd, enable_pass, command):
@@ -41,20 +42,21 @@ def telnet_session(ip, user, passwd, enable_pass, command):
         print(f'Telnet Session Failed: {e}')
         return None
 
-# Telnet session using the function
-running_config_telnet = telnet_session(ip_address, username, password, enable_password, 'show running-config')
+# Generate offline configuration and save it to a file
+if os.path.exists(offline_config_file):
+    os.remove(offline_config_file)  # Remove the existing offline config file if it exists
 
-if running_config_telnet is not None:
-    print('Telnet Session:')
-    print(f'Successfully connected to: {ip_address}')
-    print(f'Username: {username}')
+try:
+    telnet_session(ip_address, username, password, enable_password, 'show running-config')
+    with open(output_file, 'r') as online_file:
+        online_config = online_file.read()
+        with open(offline_config_file, 'w') as offline_file:
+            offline_file.write(online_config)
 
-    # Save the Telnet running configuration to a local file
-    with open(output_file, 'w') as file:
-        file.write(running_config_telnet)
-
-    print('Running configuration saved to', output_file)
+    print('Offline configuration file saved as', offline_config_file)
     print('------------------------------------------------------')
+except Exception as e:
+    print(f'Error generating offline configuration: {e}')
 
 # SSH session using paramiko
 try:
@@ -94,22 +96,21 @@ except Exception as e:
     print(f'SSH Session Failed: {e}')
 
 # Load the offline configuration
-offline_config_file = 'offline_config.txt'
 if os.path.exists(offline_config_file):
     with open(offline_config_file, 'r') as offline_file:
         offline_config = offline_file.read()
 
-    # Compare the configurations and print the differences
-    diff = list(difflib.unified_diff(running_config_telnet.splitlines(), offline_config.splitlines()))
+        # Compare the configurations and print the differences
+        diff = list(difflib.unified_diff(running_config_telnet.splitlines(), offline_config.splitlines()))
 
-    print('Differences between the current running configuration and the offline version:')
-    for line in diff:
-        if line.startswith('  '):
-            continue  # Unchanged line
-        elif line.startswith('- '):
-            print(f'Removed: {line[2:]}')  # Line only in the offline config
-        elif line.startswith('+ '):
-            print(f'Added: {line[2:]}')  # Line only in the running config
-    print('------------------------------------------------------')
+        print('Differences between the current running configuration and the offline version:')
+        for line in diff:
+            if line.startswith('  '):
+                continue  # Unchanged line
+            elif line.startswith('- '):
+                print(f'Removed: {line[2:]}')  # Line only in the offline config
+            elif line.startswith('+ '):
+                print(f'Added: {line[2:]}')  # Line only in the running config
+        print('------------------------------------------------------')
 else:
     print(f'Offline config file not found: {offline_config_file}')
