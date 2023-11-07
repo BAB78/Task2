@@ -11,9 +11,7 @@ enable_password = 'class123!'
 ssh_username = 'cisco'
 ssh_password = 'cisco123!'
 output_file = 'running_config.txt'  # Name of the local file to save the configuration
-
-# Full path for the offline configuration file
-offline_config_file = '/devasc/labs/prne/offline_config.txt'
+offline_config_file = 'devasc/labs/prne/offline_config.txt'  # Path to save the offline configuration
 
 # Function to handle Telnet login and command execution
 def telnet_session(ip, user, passwd, enable_pass, command):
@@ -101,17 +99,17 @@ if os.path.exists(offline_config_file):
     with open(offline_config_file, 'r') as offline_file:
         offline_config = offline_file.read()
 
-        # Compare the configurations and print the differences
-        diff = list(difflib.unified_diff(running_config_telnet.splitlines(), offline_config.splitlines()))
+    # Compare the configurations and print the differences
+    diff = list(difflib.unified_diff(running_config_telnet.splitlines(), offline_config.splitlines()))
 
-        print('Differences between the current running configuration and the offline version:')
-        for line in diff:
-            if line.startswith('  '):
-                continue  # Unchanged line
-            elif line.startswith('- '):
-                print(f'Removed: {line[2:]}')  # Line only in the offline config
-            elif line.startswith('+ '):
-                print(f'Added: {line[2:]}')  # Line only in the running config
-        print('------------------------------------------------------')
-    else:
-        print(f'Offline config file not found: {offline_config_file}')
+    print('Differences between the current running configuration and the offline version:')
+    for line in diff:
+        if line.startswith('  '):
+            continue  # Unchanged line
+        elif line.startswith('- '):
+            print(f'Removed: {line[2:]}')  # Line only in the offline config
+        elif line.startswith('+ '):
+            print(f'Added: {line[2:]}')  # Line only in the running config
+    print('------------------------------------------------------')
+else:
+    print(f'Offline config file not found: {offline_config_file}')
