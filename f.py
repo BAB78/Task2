@@ -12,26 +12,39 @@ ssh_username = 'cisco'
 ssh_password = 'cisco123!'
 output_file = 'running_config.txt'  # Name of the local file to save the configuration
 
-# Telnet session using telnetlib
-try:
-    tn = telnetlib.Telnet(ip_address)
-    tn.read_until(b'Username: ')
-    tn.write(username.encode('utf-8') + b'\n')
-    tn.read_until(b'Password: ')
-    tn.write(password.encode('utf-8') + b'\n')
+# Function to handle Telnet login and command execution
+def telnet_session(ip, user, passwd, enable_pass, command):
+    try:
+        tn = telnetlib.Telnet(ip)
+        tn.read_until(b'Username: ', timeout=10)
+        tn.write(user.encode('utf-8') + b'\n')
+        tn.read_until(b'Password: ', timeout=10)
+        tn.write(passwd.encode('utf-8') + b'\n')
+        tn.read_until(b'Password: ', timeout=10)
+        tn.write(enable_pass.encode('utf-8') + b'\n')
 
-    # Add this line to read until you find the "Password" prompt
-    tn.read_until(b'Password: ')
-    
+        # Send a command to output the running configuration
+        tn.write(command.encode('utf-8') + b'\n')
+        
+        # Read until you find the end pattern or timeout
+        running_config_telnet = tn.read_until(b'end\r\n\r\n', timeout=30).decode('utf-8')
+
+        # Close Telnet session
+        tn.write(b'quit\n')
+        tn.close()
+
+        return running_config_telnet
+    except Exception as e:
+        print(f'Telnet Session Failed: {e}')
+        return None
+
+# Telnet session using the function
+running_config_telnet = telnet_session(ip_address, username, password, enable_password, 'show running-config')
+
+if running_config_telnet is not None:
     print('Telnet Session:')
     print(f'Successfully connected to: {ip_address}')
     print(f'Username: {username}')
-
-    # Send a command to output the running configuration
-    tn.write(b'show running-config\n')
-
-    # Read until you find some end pattern or timeout
-    running_config_telnet = tn.read_until(b'end\r\n\r\n', timeout=10).decode('utf-8')
 
     # Save the Telnet running configuration to a local file
     with open(output_file, 'w') as file:
@@ -39,12 +52,6 @@ try:
 
     print('Running configuration saved to', output_file)
     print('------------------------------------------------------')
-
-    # Close Telnet session
-    tn.write(b'quit\n')
-    tn.close()
-except Exception as e:
-    print(f'Telnet Session Failed: {e}')
 
 # SSH session using paramiko
 try:
@@ -87,10 +94,9 @@ offline_config_file = 'offline_config.txt'
 with open(offline_config_file, 'r') as offline_file:
     offline_config = offline_file.read()
 
-# Compare the configurations
+# Compare the configurations and print the differences
 diff = list(difflib.unified_diff(running_config_telnet.splitlines(), offline_config.splitlines()))
 
-# Display the differences
 print('Differences between the current running configuration and the offline version:')
 for line in diff:
     if line.startswith('  '):
@@ -101,14 +107,3 @@ for line in diff:
         print(f'Added: {line[2:]}')  # Line only in the running config
 
 print('------------------------------------------------------')
-
-
-error message 
-Traceback (most recent call last):
-  File "/home/devasc/Downloads/f.py", line 24, in <module>
-    tn.read_until(b'Password: ')
-  File "/usr/lib/python3.8/telnetlib.py", line 315, in read_until
-    if selector.select(timeout):
-  File "/usr/lib/python3.8/selectors.py", line 415, in select
-    fd_event_list = self._selector.poll(timeout)
-KeyboardInterrupt
