@@ -11,7 +11,9 @@ enable_password = 'class123!'
 ssh_username = 'cisco'
 ssh_password = 'cisco123!'
 output_file = 'running_config.txt'  # Name of the local file to save the configuration
-offline_config_file = 'devasc/labs/prne/offline_config.txt'  # Specify the path for the offline configuration file
+
+# Full path for the offline configuration file
+offline_config_file = '/devasc/labs/prne/offline_config.txt'
 
 # Function to handle Telnet login and command execution
 def telnet_session(ip, user, passwd, enable_pass, command):
@@ -111,5 +113,5 @@ if os.path.exists(offline_config_file):
             elif line.startswith('+ '):
                 print(f'Added: {line[2:]}')  # Line only in the running config
         print('------------------------------------------------------')
-else:
-    print(f'Offline config file not found: {offline_config_file}')
+    else:
+        print(f'Offline config file not found: {offline_config_file}')
