@@ -11,7 +11,6 @@ enable_password = 'class123!'
 ssh_username = 'cisco'
 ssh_password = 'cisco123!'
 output_file = 'running_config.txt'  # Name of the local file to save the configuration
-offline_config_file = 'offline_config.txt'
 
 # Function to handle Telnet login and command execution
 def telnet_session(ip, user, passwd, enable_pass, command):
@@ -54,9 +53,45 @@ if running_config_telnet is not None:
     print('Running configuration saved to', output_file)
     print('------------------------------------------------------')
 
-# Check if the offline configuration file exists
+# SSH session using paramiko
+try:
+    ssh = paramiko.SSHClient()
+    ssh.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+    ssh.connect(ip_address, username=ssh_username, password=ssh_password, look_for_keys=False, allow_agent=False)
+    ssh_shell = ssh.invoke_shell()
+
+    # Enter enable mode
+    ssh_shell.send('enable\n')
+    ssh_shell.send(enable_password + '\n')
+    
+    print('SSH Session:')
+    print(f'Successfully connected to: {ip_address}')
+    print(f'Username: {ssh_username}')
+    print(f'Password: {ssh_password}')
+    print(f'Enable Password: {enable_password}')
+
+    # Send a command to output the running configuration
+    ssh_shell.send('show running-config\n')
+    running_config_ssh = ssh_shell.recv(65535).decode('utf-8')
+
+    # Save the SSH running configuration to a local file
+    with open(output_file, 'w') as file:
+        file.write(running_config_ssh)
+
+    print('Running configuration saved to', output_file)
+    print('------------------------------------------------------')
+
+    # Exit enable mode
+    ssh_shell.send('exit\n')
+
+    # Close SSH session
+    ssh.close()
+except Exception as e:
+    print(f'SSH Session Failed: {e}')
+
+# Load the offline configuration
+offline_config_file = 'offline_config.txt'
 if os.path.exists(offline_config_file):
-    # Load the offline configuration
     with open(offline_config_file, 'r') as offline_file:
         offline_config = offline_file.read()
 
@@ -71,7 +106,6 @@ if os.path.exists(offline_config_file):
             print(f'Removed: {line[2:]}')  # Line only in the offline config
         elif line.startswith('+ '):
             print(f'Added: {line[2:]}')  # Line only in the running config
-
     print('------------------------------------------------------')
 else:
-    print(f'Offline configuration file ({offline_config_file}) does not exist.')
+    print(f'Offline config file not found: {offline_config_file}')
