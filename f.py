@@ -42,21 +42,20 @@ def telnet_session(ip, user, passwd, enable_pass, command):
         print(f'Telnet Session Failed: {e}')
         return None
 
-# Generate offline configuration and save it to a file
-if os.path.exists(offline_config_file):
-    os.remove(offline_config_file)  # Remove the existing offline config file if it exists
+# Telnet session using the function
+running_config_telnet = telnet_session(ip_address, username, password, enable_password, 'show running-config')
 
-try:
-    telnet_session(ip_address, username, password, enable_password, 'show running-config')
-    with open(output_file, 'r') as online_file:
-        online_config = online_file.read()
-        with open(offline_config_file, 'w') as offline_file:
-            offline_file.write(online_config)
+if running_config_telnet is not None:
+    print('Telnet Session:')
+    print(f'Successfully connected to: {ip_address}')
+    print(f'Username: {username}')
 
-    print('Offline configuration file saved as', offline_config_file)
+    # Save the Telnet running configuration to a local file
+    with open(output_file, 'w') as file:
+        file.write(running_config_telnet)
+
+    print('Running configuration saved to', output_file)
     print('------------------------------------------------------')
-except Exception as e:
-    print(f'Error generating offline configuration: {e}')
 
 # SSH session using paramiko
 try:
