@@ -10,8 +10,8 @@ password = 'cisco123!'
 enable_password = 'class123!'
 ssh_username = 'cisco'
 ssh_password = 'cisco123!'
-output_file = 'running_config.txt'  # Name of the local file to save the configuration
-offline_config_file = 'devasc/labs/prne/offline_config.txt'  # Path to save the offline configuration
+output_file = 'running_config.txt'  # Name of the local file to save the running configuration
+offline_config_file = 'startup_config.txt'  # Path to save the startup configuration
 
 # Function to handle Telnet login and command execution
 def telnet_session(ip, user, passwd, enable_pass, command):
@@ -74,16 +74,16 @@ try:
     print(f'Password: {ssh_password}')
     print(f'Enable Password: {enable_password}')
 
-    # Send a command to output the running configuration
+    # Send a command to output the startup configuration
     ssh_shell.send('terminal length 0\n')  # Disable paging for SSH as well
-    ssh_shell.send('show running-config\n')
-    running_config_ssh = ssh_shell.recv(65535).decode('utf-8')
+    ssh_shell.send('show startup-config\n')
+    startup_config_ssh = ssh_shell.recv(65535).decode('utf-8')
 
-    # Save the SSH running configuration to a local file
-    with open(output_file, 'w') as file:
-        file.write(running_config_ssh)
+    # Save the SSH startup configuration to a local file
+    with open(offline_config_file, 'w') as file:
+        file.write(startup_config_ssh)
 
-    print('Running configuration saved to', output_file)
+    print('Startup configuration saved to', offline_config_file)
     print('------------------------------------------------------')
 
     # Exit enable mode
@@ -102,14 +102,14 @@ if os.path.exists(offline_config_file):
     # Compare the configurations and print the differences
     diff = list(difflib.unified_diff(running_config_telnet.splitlines(), offline_config.splitlines()))
 
-    print('Differences between the current running configuration and the offline version:')
+    print('Differences between the current running configuration and the offline startup configuration:')
     for line in diff:
         if line.startswith('  '):
             continue  # Unchanged line
         elif line.startswith('- '):
-            print(f'Removed: {line[2:]}')  # Line only in the offline config
+            print(f'Removed: {line[2:]}')  # Line only in the startup config
         elif line.startswith('+ '):
             print(f'Added: {line[2:]}')  # Line only in the running config
     print('------------------------------------------------------')
 else:
-    print(f'Offline config file not found: {offline_config_file}')
+    print(f'Startup config file not found: {offline_config_file}')
