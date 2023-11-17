@@ -205,7 +205,7 @@ def display_menu():
         print('4. Compare the current running configuration with a local offline version')
         print('5. Exit')
 
-        choice = input('Enter your choice (1-7): ')
+        choice = input('Enter your choice (1-5): ')
 
         if choice == '1':
             run_telnet()
