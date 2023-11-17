@@ -195,18 +195,6 @@ def compare_with_local_offline_version():
     else:
         print('Run Telnet or SSH first to fetch running configuration.')
 
-# Function to compare with Cisco device hardening advice
-def compare_with_hardening_advice():
-    print("Placeholder for compare_with_hardening_advice function")
-
-# Function to configure syslog for event logging and monitoring
-def configure_syslog(ip, username, password, enable_password):
-    print("Placeholder for configure_syslog function")
-
-# Function to configure event logging
-def configure_event_logging(ip, username, password, enable_password):
-    print("Placeholder for configure_event_logging function")
-
 # Function to display menu and execute selected option
 def display_menu():
     while True:
@@ -215,9 +203,7 @@ def display_menu():
         print('2. SSH')
         print('3. Compare the current running configuration with the start-up configuration')
         print('4. Compare the current running configuration with a local offline version')
-        print('5. Compare the current running configuration against Cisco device hardening advice')
-        print('6. Configure syslog for event logging and monitoring')
-        print('7. Exit')
+        print('5. Exit')
 
         choice = input('Enter your choice (1-7): ')
 
@@ -230,14 +216,9 @@ def display_menu():
         elif choice == '4':
             compare_with_local_offline_version()
         elif choice == '5':
-            compare_with_hardening_advice()
-        elif choice == '6':
-            configure_syslog(ip_address, username, password, enable_password)
-            configure_event_logging(ip_address, username, password, enable_password)
-        elif choice == '7':
             break
         else:
-            print('Invalid choice. Please enter a number between 1 and 7.')
+            print('Invalid choice. Please enter a number between 1 and 5.')
 
 # Main execution
 display_menu()
